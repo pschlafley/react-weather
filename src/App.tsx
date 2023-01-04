@@ -1,112 +1,119 @@
-import React, { useState } from 'react';
-import './App.css';
+import { useState } from 'react';
+import { Formik, Form, Field, ErrorMessage } from 'formik';
+import * as Yup from 'yup';
+import CurrentCityWeather from './components/CityCurrentWeather';
+import { ICityWeatherData, IFormValues, IListObject } from './utils/interfaces';
 const api_key = import.meta.env.VITE_API_KEY;
 
-interface IWeatherInfo {
-	description: string;
-	icon: string;
-}
-
-interface IWeatherMainInfo {
-	temp: number;
-	feels_like: string;
-	humidity: number;
-	temp_max: number;
-	temp_min: number;
-}
-
-interface ICityWeatherData {
-	weather: Array<IWeatherInfo>;
-	name: string;
-	sys: object;
-	timezone: number;
-	visibility: number;
-	wind: object;
-	clouds: object;
-	main: IWeatherMainInfo;
-}
-
-interface IFormInput {
-	cityName: string;
-	stateName: string;
-}
-
-interface ICityInfo {
-	city: string;
-	state: string;
-}
-
 function App() {
-	const [formInput, setFormInput] = useState<IFormInput>({
-		cityName: '',
-		stateName: '',
+	const initialValues: IFormValues = { cityName: '', stateName: '' };
+
+	let local_storage_array: Array<IListObject> = [];
+	console.log(local_storage_array);
+
+	const validationSchema = Yup.object({
+		cityName: Yup.string().required('City Name is Required!'),
+		stateName: Yup.string().required('State Name is Required!'),
 	});
-	const [getCityName, setCityName] = useState<ICityInfo>({
-		city: '',
-		state: '',
-	});
-	const [getCityWeatherData, setCityWeatherData] = useState<ICityWeatherData>();
 
-	const handleChange = (event: React.FormEvent<HTMLInputElement>): void => {
-		event.preventDefault();
-		let { name, value } = event.target as HTMLInputElement;
-		setFormInput({
-			...formInput,
-			[name]: value,
-		});
-	};
+	const [currentCityWeatherState, setCurrentCityWeatherState] =
+		useState<ICityWeatherData>();
+	let city_weather_data = currentCityWeatherState;
 
-	const handleSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
-		event.preventDefault();
+	const [stateNameState, setStateNameState] = useState<string>();
 
-		setCityName({
-			...getCityName,
-			city: formInput.cityName,
-			state: formInput.stateName,
-		});
-
+	const submitForm = (values: IFormValues) => {
 		try {
 			fetch(
-				`https://api.openweathermap.org/data/2.5/weather?q=${formInput.cityName}&appid=${api_key}&units=imperial`
+				`https://api.openweathermap.org/data/2.5/weather?q=${values.cityName}&appid=${api_key}&units=imperial`
 			)
 				.then((response) => response.json())
 				.then((data) => {
-					setCityWeatherData(data);
+					setCurrentCityWeatherState(data);
 				});
+			setStateNameState(values.stateName);
+
+			local_storage_array.push({
+				city: values.cityName,
+				state: values.stateName,
+			});
 		} catch (error) {
 			console.log(error);
 		}
 	};
 
 	return (
-		<div className="App">
-			<form onSubmit={handleSubmit}>
-				<label htmlFor="cityName">Enter City:</label>
-				<input name="cityName" type="text" onChange={handleChange} />
-				<input name="stateName" type="text" onChange={handleChange} />
-				<button type="submit">Submit</button>
-			</form>
+		<div className="mobile-s:w-5/6 mobile-s:px-2 mobile-m:w-5/6 laptop:px-8 laptop:w-1/2 flex flex-col justify-center items-center my-4 mx-4 border border-black rounded-lg w-1/4 min-h-full py-12 px-4">
+			<div className="w-full max-w-md space-y-8">
+				<div>
+					<h1 className="mt-6 text-center text-3xl font-bold tracking-tight">
+						Weather Dashboard
+					</h1>
+				</div>
+				<Formik
+					initialValues={initialValues}
+					validationSchema={validationSchema}
+					onSubmit={(values, { resetForm, setSubmitting }) => {
+						submitForm(values);
+						resetForm();
+						setSubmitting(false);
+					}}
+				>
+					{({ touched, errors, dirty, isValid }) => (
+						<Form>
+							<Field
+								className={
+									errors.cityName && touched.cityName
+										? `relative block w-full appearance-none rounded-none rounded-t-md border-2 border-red-600 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-black focus:outline-none focus:ring-black sm:text-sm`
+										: touched.cityName && !errors.cityName
+										? `relative block w-full appearance-none rounded-none rounded-t-md border-2 border-green-600 dark:border-green-400 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-black focus:outline-none focus:ring-black sm:text-sm`
+										: `relative block w-full appearance-none rounded-none rounded-t-md border border-gray-300 px-3 py-2 text-green-900 placeholder-gray-500 focus:z-10 focus:border-black focus:outline-none focus:ring-black sm:text-sm`
+								}
+								name="cityName"
+								id="cityName"
+								placeholder="Enter City Here"
+							/>
+							{touched.cityName && errors.cityName ? (
+								<ErrorMessage name="cityName" />
+							) : null}
+							<Field
+								className={
+									errors.stateName && touched.stateName
+										? `relative block w-full appearance-none rounded-none rounded-t-md border-2 border-red-600 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-black focus:outline-none focus:ring-black sm:text-sm`
+										: touched.stateName && !errors.stateName
+										? `relative block w-full appearance-none rounded-none rounded-t-md border-2 border-green-600 dark:border-green-400 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-black focus:outline-none focus:ring-black sm:text-sm`
+										: `relative block w-full appearance-none rounded-none rounded-t-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-black focus:outline-none focus:ring-black sm:text-sm`
+								}
+								name="stateName"
+								id="stateName"
+								placeholder="Enter State Here"
+							/>
 
-			<h2>Current City:</h2>
-			{getCityWeatherData !== undefined ? (
-				<>
-					<h3>
-						{getCityName.city} {getCityName.state}
-					</h3>
+							{touched.stateName && errors.stateName ? (
+								<ErrorMessage name="stateName" />
+							) : null}
 
-					<div>
-						<h2>Today's Weather</h2>
-						<ul>
-							<li>Description: {getCityWeatherData.weather[0].description}</li>
-							<img
-								src={`http://openweathermap.org/img/wn/${getCityWeatherData.weather[0].icon}.png`}
-							></img>
-						</ul>
-					</div>
-				</>
-			) : (
-				<h3>Invalid Input</h3>
-			)}
+							<button
+								type="submit"
+								disabled={!dirty && !isValid}
+								className={
+									!isValid || !dirty
+										? `group relative flex w-full justify-center rounded-md border-transparent text-white bg-slate-400 py-2 px-4 text-xl font-medium`
+										: `group relative flex w-full justify-center rounded-md border border-transparent hover:border-black text-white bg-[#aa913b] py-2 px-4 text-xl font-medium hover:bg-[#c8ac48] focus:outline-none focus:ring-1 focus:ring-black`
+								}
+							>
+								Submit
+							</button>
+						</Form>
+					)}
+				</Formik>
+
+				<CurrentCityWeather
+					currentCityWeatherState={city_weather_data as ICityWeatherData}
+					stateName={stateNameState as string}
+					localStorageList={local_storage_array as Array<IListObject>}
+				/>
+			</div>
 		</div>
 	);
 }
