@@ -47,3 +47,10 @@ export interface IListObject {
 	city: string;
 	state: string;
 }
+
+export interface svgObjects {
+	Clouds: Array<string>;
+	PartlyCloudy: Array<string>;
+	Misty: Array<string>;
+	StaryNight: Array<string>;
+}
