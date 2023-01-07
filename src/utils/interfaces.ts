@@ -1,3 +1,5 @@
+import { Dispatch } from 'react';
+
 export interface IWeatherInfo {
 	description: string;
 	icon: string;
@@ -43,14 +45,15 @@ export interface IFormValues {
 	stateName: string;
 }
 
-export interface IListObject {
-	city: string;
-	state: string;
-}
-
 export interface svgObjects {
 	Clouds: Array<string>;
 	PartlyCloudy: Array<string>;
 	Misty: Array<string>;
-	StaryNight: Array<string>;
+}
+
+export interface LocalStorageListProps {
+	citiesSearchState: string;
+	setCurrentCityWeatherState: Dispatch<ICityWeatherData>;
+	setStateNameState: Dispatch<string>;
+	numberOfSearchesState: number;
 }

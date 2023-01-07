@@ -1,48 +1,46 @@
 import { currentCityProps } from '../utils/types';
-import { svgObjects } from '../utils/interfaces';
-import { CloudSvg, PartlyCloudy, StaryNight } from './svg/index';
 
 const CurrentCityWeather = ({
 	currentCityWeatherState,
 	stateName,
-	localStorageList,
 }: currentCityProps) => {
-	const SVG_Display_Conditions: svgObjects = {
-		Clouds: ['clouds', 'broken clouds', 'overcast clouds'],
-		PartlyCloudy: ['partly cloudy'],
-		Misty: ['misty'],
-		StaryNight: ['clear sky', 'few clouds'],
-	};
+	const data = currentCityWeatherState;
 
 	return (
-		<div className="flex flex-col justify-center items-center">
-			{currentCityWeatherState ? (
-				<>
-					{SVG_Display_Conditions.Clouds.includes(
-						currentCityWeatherState.weather[0].description
-					) ? (
-						<CloudSvg />
-					) : SVG_Display_Conditions.StaryNight.includes(
-							currentCityWeatherState.weather[0].description
-					  ) ? (
-						<StaryNight />
-					) : null}
-					<h2>Current City:</h2>
-					{currentCityWeatherState.name} {stateName}
-					<div>
-						<h2>Today's Weather</h2>
-						<ul>
-							<li>
-								Description: {currentCityWeatherState.weather[0].description}
-							</li>
-							<img
-								src={`http://openweathermap.org/img/wn/${currentCityWeatherState.weather[0].icon}.png`}
-							></img>
-						</ul>
+		<>
+			{data ? (
+				<div className="container mx-auto">
+					<h2 className="text-4xl underline">
+						{data.name} {stateName}
+					</h2>
+
+					<div className="flex flex-row justify-center items-start">
+						<img
+							src={`http://openweathermap.org/img/wn/${currentCityWeatherState.weather[0].icon}.png`}
+						></img>
+						<h3 className="text-2xl mt-4">{data.weather[0].description}</h3>
 					</div>
-				</>
+					<div className="flex flex-col justify-center items-start mt-6 border border-black rounded-lg p-4">
+						<p>
+							<span className="font-bold">Temperature:</span>{' '}
+							{Math.floor(data.main.temp)}°F
+						</p>
+						<p>
+							<span className="font-bold">Low:</span>{' '}
+							{Math.floor(data.main.temp_min)}°F
+						</p>
+						<p>
+							<span className="font-bold">High:</span>{' '}
+							{Math.floor(data.main.temp_max)}°F
+						</p>
+						<p>
+							<span className="font-bold">Feels Like:</span>{' '}
+							{Math.floor(parseInt(data.main.feels_like))}°F
+						</p>
+					</div>
+				</div>
 			) : null}
-		</div>
+		</>
 	);
 };
 
