@@ -13,12 +13,7 @@ const LocalStorageList = ({
 		window.localStorage.setItem('increment', `${0}`);
 	}
 
-	const [array, setArray] = useState(() => {
-		const saved = localStorage.getItem(
-			`searchedCities${numberOfSearchesState}`
-		);
-		return saved || [];
-	});
+	const [array, setArray] = useState(['']);
 
 	let localStorageItems: Array<string> = [];
 
@@ -41,8 +36,8 @@ const LocalStorageList = ({
 		}
 	};
 
-	useEffect(() => {
-		if (numberOfSearchesState >= 0) {
+	const getLocalStorageItems = () => {
+		if (numberOfSearchesState > 0) {
 			let getIncrement;
 			let parsedIncrement;
 			if (checkIfIncrement) {
@@ -59,17 +54,13 @@ const LocalStorageList = ({
 				for (let i = 1; i < parsedIncrement + 1; i++) {
 					let items = localStorage.getItem(`searchedCities${i}`);
 
-					localStorageItems.push(`${items}`);
+					setArray([...localStorageItems, items!]);
 				}
-			setArray(localStorageItems);
 		}
-	}, [citiesSearchState]);
-
-	return (
-		<>
-			{array != undefined ? (
+		return (
+			<>
 				<div className="flex flex-col justify-start items-center">
-					{array.map((item, i) => {
+					{localStorageItems.map((item, i) => {
 						const parsedString = JSON.parse(item);
 						const splitItem = parsedString.split(' ');
 
@@ -86,11 +77,9 @@ const LocalStorageList = ({
 						);
 					})}
 				</div>
-			) : (
-				<div>Hello</div>
-			)}
-		</>
-	);
+			</>
+		);
+	};
 };
 
 export default LocalStorageList;
