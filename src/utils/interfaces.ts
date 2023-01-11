@@ -52,8 +52,9 @@ export interface svgObjects {
 }
 
 export interface LocalStorageListProps {
-	citiesSearchState: string;
 	setCurrentCityWeatherState: Dispatch<ICityWeatherData>;
 	setStateNameState: Dispatch<string>;
 	numberOfSearchesState: number;
+	showLocalStorageItemsState: boolean;
+	setShowLocalStorageItemsState: Dispatch<boolean>;
 }

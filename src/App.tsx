@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import CurrentCityWeather from './components/CityCurrentWeather';
@@ -7,6 +7,13 @@ import LocalStorageList from './components/LocalStorageList';
 const api_key = import.meta.env.VITE_API_KEY;
 
 function App() {
+	useEffect(() => {
+		window.addEventListener('beforeunload', (e) => {
+			e.preventDefault();
+			setShowLocalStorageItemsState(false);
+		});
+	}, []);
+
 	const initialValues: IFormValues = { cityName: '', stateName: '' };
 
 	const validationSchema = Yup.object({
@@ -23,10 +30,21 @@ function App() {
 
 	const [numberOfSearchesState, setNumberOfSearchesState] = useState<number>(0);
 
-	const [citiesSearchState, setCitiesSearchedState] = useState<string>();
+	const [showLocalStorageItemsState, setShowLocalStorageItemsState] =
+		useState<boolean>(true);
 
 	const submitForm = (values: IFormValues) => {
 		try {
+			let getIncrement = localStorage.getItem('increment');
+			if (getIncrement != null) {
+				let parsedIncrement = parseInt(getIncrement);
+				parsedIncrement += 1;
+				localStorage.setItem('increment', `${parsedIncrement}`);
+				localStorage.setItem(
+					`searchedCities${parsedIncrement}`,
+					JSON.stringify(`${values.cityName} ${values.stateName}`)
+				);
+			}
 			fetch(
 				`https://api.openweathermap.org/data/2.5/weather?q=${values.cityName}&appid=${api_key}&units=imperial`
 			)
@@ -36,12 +54,6 @@ function App() {
 				});
 			setStateNameState(values.stateName);
 			setNumberOfSearchesState(numberOfSearchesState + 1);
-			let getIncrement = window.localStorage.getItem('increment');
-			if (getIncrement != null) {
-				let parsedIncrement = parseInt(getIncrement);
-				parsedIncrement += 1;
-				window.localStorage.setItem('increment', `${parsedIncrement}`);
-			}
 		} catch (error) {
 			console.log(error);
 		}
@@ -60,7 +72,6 @@ function App() {
 						initialValues={initialValues}
 						validationSchema={validationSchema}
 						onSubmit={(values, { resetForm }) => {
-							setCitiesSearchedState(`${values.cityName} ${values.stateName}`);
 							submitForm(values);
 							resetForm();
 						}}
@@ -115,10 +126,11 @@ function App() {
 					</Formik>
 				</div>
 				<LocalStorageList
-					citiesSearchState={citiesSearchState as string}
 					setCurrentCityWeatherState={setCurrentCityWeatherState}
 					setStateNameState={setStateNameState}
 					numberOfSearchesState={numberOfSearchesState}
+					showLocalStorageItemsState={showLocalStorageItemsState}
+					setShowLocalStorageItemsState={setShowLocalStorageItemsState}
 				/>
 			</div>
 			<div>

@@ -1,21 +1,24 @@
 import { useEffect, useState } from 'react';
 import { LocalStorageListProps } from '../utils/interfaces';
+import uniq from 'lodash.uniq';
 
 const LocalStorageList = ({
-	citiesSearchState,
 	setCurrentCityWeatherState,
 	setStateNameState,
 	numberOfSearchesState,
+	showLocalStorageItemsState,
+	setShowLocalStorageItemsState,
 }: LocalStorageListProps) => {
 	const api_key = import.meta.env.VITE_API_KEY;
-	let checkIfIncrement = window.localStorage.getItem('increment');
+	let checkIfIncrement = localStorage.getItem('increment');
 	if (checkIfIncrement == null) {
-		window.localStorage.setItem('increment', `${0}`);
+		localStorage.setItem('increment', `${0}`);
 	}
-
 	const [array, setArray] = useState(['']);
 
 	let localStorageItems: Array<string> = [];
+
+	let parsedIncrement = parseInt(checkIfIncrement!);
 
 	const fetchApiDataFromLocalStorageList = (
 		value: string,
@@ -36,50 +39,63 @@ const LocalStorageList = ({
 		}
 	};
 
-	const getLocalStorageItems = () => {
-		if (numberOfSearchesState > 0) {
+	useEffect(() => {
+		if (showLocalStorageItemsState == true) {
 			let getIncrement;
 			let parsedIncrement;
 			if (checkIfIncrement) {
-				getIncrement = window.localStorage.getItem('increment');
+				getIncrement = localStorage.getItem('increment');
 				getIncrement == null
 					? (parsedIncrement = 0)
 					: (parsedIncrement = parseInt(getIncrement));
 			}
-			window.localStorage.setItem(
-				`searchedCities${parsedIncrement}`,
-				JSON.stringify(citiesSearchState)
-			);
-			if (parsedIncrement)
+
+			if (parsedIncrement) {
 				for (let i = 1; i < parsedIncrement + 1; i++) {
 					let items = localStorage.getItem(`searchedCities${i}`);
 
-					setArray([...localStorageItems, items!]);
-				}
-		}
-		return (
-			<>
-				<div className="flex flex-col justify-start items-center">
-					{localStorageItems.map((item, i) => {
-						const parsedString = JSON.parse(item);
-						const splitItem = parsedString.split(' ');
+					if (items == null) continue;
 
-						return (
-							<button
-								key={i}
-								type="submit"
-								onClick={() => {
-									fetchApiDataFromLocalStorageList(splitItem[0], splitItem[1]);
-								}}
-							>
-								{splitItem[0]}
-							</button>
-						);
-					})}
-				</div>
-			</>
-		);
-	};
+					localStorageItems.push(`${items}`);
+				}
+
+				setArray([...localStorageItems]);
+			}
+
+			if (
+				parsedIncrement != undefined &&
+				parsedIncrement > 5 &&
+				array.length > 5
+			) {
+				let item = `searchedCities${parsedIncrement - (array.length - 1)}`;
+				localStorage.removeItem(item);
+			}
+		}
+	}, [numberOfSearchesState, showLocalStorageItemsState]);
+
+	return showLocalStorageItemsState ? (
+		<div className="flex flex-col justify-start items-center">
+			{uniq(array).map((item: string, i: number) => {
+				if (item == '') {
+					return null;
+				}
+				const parsedString = JSON.parse(item);
+				const splitItem = parsedString.split(' ');
+
+				return (
+					<button
+						key={i}
+						type="submit"
+						onClick={() => {
+							fetchApiDataFromLocalStorageList(splitItem[0], splitItem[1]);
+						}}
+					>
+						{splitItem[0]}
+					</button>
+				);
+			})}
+		</div>
+	) : null;
 };
 
 export default LocalStorageList;
