@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { LocalStorageListProps } from '../utils/interfaces';
 import uniq from 'lodash.uniq';
+import { capitalizeFirstLetter } from '../utils/helpers';
 
 const LocalStorageList = ({
 	setCurrentCityWeatherState,
@@ -17,8 +18,6 @@ const LocalStorageList = ({
 	const [array, setArray] = useState(['']);
 
 	let localStorageItems: Array<string> = [];
-
-	let parsedIncrement = parseInt(checkIfIncrement!);
 
 	const fetchApiDataFromLocalStorageList = (
 		value: string,
@@ -64,11 +63,12 @@ const LocalStorageList = ({
 
 			if (
 				parsedIncrement != undefined &&
-				parsedIncrement > 5 &&
-				array.length > 5
+				parsedIncrement >= 4 &&
+				localStorageItems.length >= 4
 			) {
-				let item = `searchedCities${parsedIncrement - (array.length - 1)}`;
-				localStorage.removeItem(item);
+				let item = parsedIncrement - localStorageItems.length + 1;
+
+				localStorage.removeItem(`searchedCities${item}`);
 			}
 		}
 	}, [numberOfSearchesState, showLocalStorageItemsState]);
@@ -84,13 +84,14 @@ const LocalStorageList = ({
 
 				return (
 					<button
+						className="bg-slate-600 text-green-500 rounded-lg py-2 px-3 w-full  m-1 hover:bg-green-500 hover:transition-colors hover:ease-in hover:text-slate-600"
 						key={i}
 						type="submit"
 						onClick={() => {
 							fetchApiDataFromLocalStorageList(splitItem[0], splitItem[1]);
 						}}
 					>
-						{splitItem[0]}
+						{capitalizeFirstLetter(splitItem[0])}
 					</button>
 				);
 			})}

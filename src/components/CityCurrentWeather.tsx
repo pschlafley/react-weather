@@ -1,4 +1,5 @@
 import { currentCityProps } from '../utils/types';
+import { capitalizeFirstLetter } from '../utils/helpers';
 
 const CurrentCityWeather = ({
 	currentCityWeatherState,
@@ -9,18 +10,21 @@ const CurrentCityWeather = ({
 	return (
 		<>
 			{data ? (
-				<div className="container mx-auto">
-					<h2 className="text-4xl underline">
-						{data.name} {stateName}
-					</h2>
-
-					<div className="flex flex-row justify-center items-start">
-						<img
-							src={`http://openweathermap.org/img/wn/${currentCityWeatherState.weather[0].icon}.png`}
-						></img>
-						<h3 className="text-2xl mt-4">{data.weather[0].description}</h3>
-					</div>
-					<div className="flex flex-col justify-center items-start mt-6 border border-black rounded-lg p-4">
+				<div>
+					<h2 className='text-3xl underline"'>Today's Weather</h2>
+					<div className="flex flex-col justify-center items-center mt-6 border border-black rounded-lg p-4">
+						<div className="flex flex-col justify-center items-center">
+							<h2 className="text-2xl underline">
+								{capitalizeFirstLetter(`${data.name} ${stateName}`)}
+							</h2>
+							<img
+								className="bg-slate-500 rounded-md mt-2"
+								src={`http://openweathermap.org/img/wn/${currentCityWeatherState.weather[0].icon}.png`}
+							></img>
+							<h3 className="text-2xl mb-4">
+								{capitalizeFirstLetter(data.weather[0].description)}
+							</h3>
+						</div>
 						<p>
 							<span className="font-bold">Temperature:</span>{' '}
 							{Math.floor(data.main.temp)}°F
